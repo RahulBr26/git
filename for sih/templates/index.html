@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Waste System Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+      .card {
+          transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+      }
+      .card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+      }
+      input[type="file"] {
+          border: 1px solid #cbd5e1;
+          border-radius: 0.5rem;
+          padding: 0.5rem;
+          padding: 0.5rem;
+          background-color: #fff;
+          width: 100%;
+          cursor: pointer;
+      }
+      input[type="file"]::-webkit-file-upload-button {
+          visibility: hidden;
+      }
+      input[type="file"]::before {
+          content: 'Choose File';
+          display: inline-block;
+          background: linear-gradient(to right, #60a5fa, #3b82f6);
+          color: white;
+          border: none;
+          border-radius: 0.375rem;
+          padding: 0.5rem 1rem;
+          cursor: pointer;
+          font-weight: 500;
+          margin-right: 0.5rem;
+          transition: background-color 0.2s ease-in-out;
+      }
+      input[type="file"]:hover::before {
+          background: linear-gradient(to right, #3b82f6, #2563eb);
+      }
+
+      /* Overlay for sidebar */
+      .overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(0,0,0,0.5);
+          opacity: 0;
+          pointer-events: none;
+          transition: opacity 0.3s ease;
+      }
+      .overlay.active {
+          opacity: 1;
+          pointer-events: auto;
+      }
+
+      /* Sidebar slide animation */
+      .sidebar {
+          position: fixed;
+          top: 0;
+          left: -250px;
+          width: 250px;
+          height: 100%;
+          background: white;
+          box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+          transition: left 0.3s ease;
+          z-index: 50;
+      }
+      .sidebar.active {
+          left: 0;
+      }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 font-sans text-gray-800 antialiased">
+
+  <!-- Hamburger button -->
+  <button id="hamburgerBtn" class="fixed top-5 left-5 z-50 bg-white p-2 rounded-full shadow-md hover:shadow-lg focus:outline-none">
+      <!-- Hamburger Icon -->
+      <svg id="hamburgerIcon" class="w-7 h-7 text-gray-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+      </svg>
+  </button>
+
+  <!-- Overlay -->
+  <div id="overlay" class="overlay"></div>
+
+  <!-- Sidebar Menu -->
+  <div id="sidebar" class="sidebar">
+      <div class="p-6">
+          <h2 class="text-2xl font-bold text-blue-700 mb-6">Menu</h2>
+          <nav class="space-y-4">
+              <a href="/" class="block px-4 py-2 rounded-lg hover:bg-blue-100 text-gray-700 font-medium">🏠 Home</a>
+              <a href="/help" class="block px-4 py-2 rounded-lg hover:bg-blue-100 text-gray-700 font-medium">❓ Help</a>
+              <a href="/map" class="block px-4 py-2 rounded-lg hover:bg-blue-100 text-gray-700 font-medium">📍 Google Map</a>
+              <a href="/map" class="block px-4 py-2 rounded-lg hover:bg-blue-100 text-gray-700 font-medium"> ☎ Contact us</a>
+               <a href="/map" class="block px-4 py-2 rounded-lg hover:bg-blue-100 text-gray-700 font-medium"> ⚙ Settings</a>
+              <a href="/logout" class="block px-4 py-2 rounded-lg hover:bg-red-100 text-red-600 font-medium">🚪 Logout</a>
+          </nav>
+      </div>
+  </div>
+
+  <div class="container mx-auto p-6 lg:p-10">
+      <header class="text-center mb-8 lg:mb-12 bg-white rounded-3xl shadow-lg p-6 flex flex-col items-center">
+          <h1 class="text-4xl font-extrabold text-gray-900 mb-4">Smart Bin Dashboard</h1>
+          <div class="mt-4 flex flex-col items-center">
+              <img src="{{ url_for('static', filename='profile.jpg') }}" alt="User Profile" class="w-24 h-24 rounded-full border-4 border-blue-400 shadow-md">
+              <p class="text-lg text-gray-600 mt-3">Welcome, <span class="font-bold text-blue-700">{{ username }}</span>!</p>
+          </div>
+          <a href="/logout" class="mt-4 text-blue-600 hover:text-blue-800 text-sm font-medium">Logout</a>
+      </header>
+
+      <!-- Existing Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+          <!-- Waste Classification Card -->
+          <div class="card bg-blue-50 border-2 border-blue-200 shadow-xl rounded-3xl p-6 flex flex-col justify-between">
+              <div>
+                  <h2 class="text-2xl font-bold text-blue-800 mb-4 flex items-center">
+                      <svg class="w-7 h-7 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                      Classify Waste
+                  </h2>
+                  <p class="text-gray-700 mb-4">Upload an image of your waste to classify it.</p>
+                  <input type="file" id="wasteImage" class="mb-5 text-gray-700">
+                  <button onclick="classifyWaste()" class="bg-gradient-to-r from-blue-500 to-blue-700 text-white font-semibold px-6 py-3 rounded-xl w-full hover:from-blue-600 hover:to-blue-800 transition-all shadow-md hover:shadow-lg">
+                      📸 Classify Now
+                  </button>
+                  <div class="mt-5 p-4 bg-blue-100 rounded-lg border border-blue-300">
+                      <p class="text-sm text-blue-700 font-medium mb-1">Classification Result:</p>
+                      <p id="result" class="text-blue-900 font-bold text-lg">Awaiting image...</p>
+                  </div>
+              </div>
+          </div>
+
+          <!-- Bin Status -->
+          <div class="card bg-white border-2 border-gray-200 shadow-xl rounded-3xl p-6">
+              <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                  <svg class="w-7 h-7 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                  Bin Status
+              </h2>
+              <p class="text-gray-700 mb-4">Real-time information about your smart bin.</p>
+              <div class="flex items-center mb-3">
+                  <span class="text-gray-500 text-xl mr-2">🗑️</span>
+                  <div class="w-full bg-gray-200 rounded-full h-3">
+                      <div class="bg-green-500 h-3 rounded-full" style="width: 7%"></div>
+                  </div>
+              </div>
+              <p class="text-gray-700 mb-1">Fill Level: <span class="font-bold text-green-600">7%</span></p>
+              <p class="text-gray-700">Current Weight: <span class="font-bold text-gray-900">0.35 kg</span></p>
+          </div>
+
+          <!-- Incentives -->
+          <div id="incentives-card" class="card bg-yellow-50 border-2 border-yellow-200 shadow-xl rounded-3xl p-6">
+              <h2 class="text-2xl font-bold text-yellow-800 mb-4 flex items-center">
+                  <svg class="w-7 h-7 mr-2 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1L21 12h-3.819a8.001 8.001 0 01-15.362 0H3l2.001-2.925C5.92 8.402 6.89 8 8 8h4zm-7 12h14a2 2 0 002-2V6a2 2 0 00-2-2H7a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                  Your Incentives
+              </h2>
+              <p class="text-gray-700 mb-4">Earn points for recycling and redeem them for exciting rewards!</p>
+              <p class="text-5xl font-extrabold text-yellow-600 mb-4" id="currentPoints">{{ points }}</p>
+              <button class="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white font-semibold px-6 py-3 rounded-xl w-full hover:from-yellow-600 hover:to-yellow-700 transition-all shadow-md hover:shadow-lg">
+                  🎁 Redeem Rewards
+              </button>
+          </div>
+      </div>
+
+      <!-- Recent History -->
+      <div class="mt-8 lg:mt-12 bg-white shadow-xl rounded-3xl p-6">
+          <h2 class="text-2xl font-bold text-gray-800 mb-5 flex items-center">
+              <svg class="w-7 h-7 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              Recent Classification History
+          </h2>
+          <ul id="history" class="text-gray-700 text-base space-y-3">
+              <li class="p-3 bg-gray-50 rounded-lg flex items-center shadow-sm">
+                  <span class="text-gray-500 mr-3 text-xl">✨</span> No history yet.
+              </li>
+          </ul>
+      </div>
+  </div>
+
+  <script>
+      // Hamburger toggle
+      const hamburgerBtn = document.getElementById("hamburgerBtn");
+      const sidebar = document.getElementById("sidebar");
+      const overlay = document.getElementById("overlay");
+
+      hamburgerBtn.addEventListener("click", () => {
+          sidebar.classList.toggle("active");
+          overlay.classList.toggle("active");
+      });
+
+      overlay.addEventListener("click", () => {
+          sidebar.classList.remove("active");
+          overlay.classList.remove("active");
+      });
+
+      // Classification function (existing)
+      async function classifyWaste() {
+          const fileInput = document.getElementById("wasteImage");
+          const resultEl = document.getElementById("result");
+          const historyEl = document.getElementById("history");
+          const pointsEl = document.getElementById("currentPoints"); 
+
+          resultEl.textContent = "Classifying...";
+          resultEl.classList.remove('text-blue-900', 'font-bold'); 
+          resultEl.classList.add('text-gray-600', 'italic');
+
+          if (!fileInput.files[0]) {
+              resultEl.textContent = "Please upload an image first.";
+              resultEl.classList.remove('text-gray-600', 'italic');
+              resultEl.classList.add('text-red-600', 'font-medium');
+              return;
+          }
+
+          const reader = new FileReader();
+          reader.onload = async function () {
+              const base64Image = reader.result.split(",")[1];
+
+              try {
+                  const response = await fetch("/classify-waste", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ image: base64Image }),
+                  });
+
+                  const data = await response.json();
+
+                  if (data.status === "success") {
+                      const category = data.classification.category;
+                      const confidence = (data.classification.confidence * 100).toFixed(2);
+
+                      resultEl.textContent = `Category: ${category.charAt(0).toUpperCase() + category.slice(1)} (Confidence: ${confidence}%)`;
+                      resultEl.classList.remove('text-gray-600', 'italic', 'text-red-600');
+                      resultEl.classList.add('text-blue-900', 'font-bold');
+
+                      const li = document.createElement("li");
+                      li.className = "p-3 bg-blue-50 rounded-lg flex items-center shadow-sm";
+                      li.innerHTML = `<span class="text-blue-500 mr-3 text-xl">${getEmojiForCategory(category)}</span> ${category.charAt(0).toUpperCase() + category.slice(1)} - ${confidence}%`;
+                      historyEl.prepend(li);
+
+                      pointsEl.textContent = data.points;
+                  } else {
+                      resultEl.textContent = "Classification failed.";
+                      resultEl.classList.remove('text-gray-600', 'italic', 'text-blue-900');
+                      resultEl.classList.add('text-red-600', 'font-medium');
+                  }
+              } catch (error) {
+                  console.error("Error during classification:", error);
+                  resultEl.textContent = "⚠️ Failed to connect to the backend API.";
+                  resultEl.classList.remove('text-gray-600', 'italic', 'text-blue-900');
+                  resultEl.classList.add('text-red-600', 'font-medium');
+              }
+          };
+          reader.readAsDataURL(fileInput.files[0]);
+      }
+
+      function getEmojiForCategory(category) {
+          switch (category) {
+              case 'recyclable': return '♻️';
+              case 'organic': return '🍎';
+              case 'hazardous': return '☢️';
+              default: return '📦';
+          }
+      }
+  </script>
+</body>
+</html>
